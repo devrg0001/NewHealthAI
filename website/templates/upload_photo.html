@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-   <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -20,6 +19,24 @@
             background-color: #FFF9E5;
             border-left: 4px solid #F6B73C;
         }
+        #waiverFormContainer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        #waiverForm {
+            background-color: white;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body class="bg-white">
@@ -36,7 +53,6 @@
                     <button onclick="showPage('about')" class="px-3 py-2 text-gray-600 hover:text-gray-900" id="aboutBtn">About</button>
                     <button onclick="showPage('investors')" class="px-3 py-2 text-gray-600 hover:text-gray-900" id="investorsBtn">Investors</button>
                     <button onclick="showPage('learn')" class="px-3 py-2 text-gray-600 hover:text-gray-900" id="learnBtn">Learn More</button>
-                   
                 </div>
             </div>
         </div>
@@ -49,11 +65,9 @@
             <div class="max-w-7xl mx-auto px-4 text-center text-white">
                 <h1 class="text-5xl font-bold mb-6">AI-Powered X-Ray Diagnostics</h1>
                 <p class="text-xl mb-8">Revolutionizing healthcare with advanced machine learning for faster, more accurate diagnoses.</p>
-               
-               <button  onclick="showPage('learn')" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
+                <button onclick="showPage('learn')" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
                     Learn More →
                 </button>
-               
             </div>
         </div>
 
@@ -62,24 +76,60 @@
             <h2 class="text-2xl font-bold mb-6">X-Ray Analysis</h2>
             
             <!-- Form for uploading X-ray image -->
-            <form action="{% url 'testing' %}" method="POST" enctype="multipart/form-data">
+            <form action="{% url 'testing' %}" method="POST" enctype="multipart/form-data" id="analyzeForm">
                 {% csrf_token %}
                 <div class="upload-area p-8 rounded-lg text-center">
                     <i data-lucide="upload-cloud" class="h-12 w-12 mx-auto mb-4 text-gray-400"></i>
                     <p class="text-gray-600 mb-4">Upload your X-ray image</p>
-                  <input type="file" accept="image/*" id="fileInput" name="image" class="hidden" onchange="document.getElementById('previewArea').style.display='block'; document.getElementById('uploadArea').classList.add('bg-green-100', 'border-green-500');">
+                    <input type="file" accept="image/*" id="fileInput" name="image" class="hidden" onchange="document.getElementById('previewArea').style.display='block'; document.getElementById('uploadArea').classList.add('bg-green-100', 'border-green-500');" required>
                     <label for="fileInput" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300 cursor-pointer">
                         Choose File
                     </label>
                 </div>
 
-<div id="previewArea" class="hidden mt-4">
-<p class="text-gray-600">Image selected successfully!</p>
-</div>
-                <button type="submit" class="w-full mt-4 bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700">
+                <div id="previewArea" class="hidden mt-4">
+                    <p class="text-gray-600">Image selected successfully!</p>
+                </div>
+                <button type="button" onclick="showWaiverForm()" class="w-full mt-4 bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700">
                     Analyze Image
                 </button>
             </form>
+
+            <!-- Waiver Form -->
+            <div id="waiverFormContainer">
+                <form id="waiverForm" onsubmit="return submitWaiverForm()">
+                    <h2 class="text-2xl font-bold mb-4">HealthAI Application Waiver & Consent Form</h2>
+                    
+                    <p><strong>Purpose of This Form</strong></p>
+                    <label><input type="checkbox" required> I acknowledge AI analysis of my health data.</label><br>
+                    <label><input type="checkbox" required> I understand AI limitations in medical diagnosis.</label><br>
+                    <label><input type="checkbox" required> I consent to de-identified data sharing (opt-out available).</label><br>
+                    
+                    <p><strong>Protected Health Information (PHI) Disclosure</strong></p>
+                    <label><input type="checkbox" required> I authorize collection and processing of my health information.</label><br>
+                    <label><input type="checkbox" required> I acknowledge PHI usage for audits and compliance.</label><br>
+                    
+                    <p><strong>Liability Waiver</strong></p>
+                    <label><input type="checkbox" required> I understand AI is not a substitute for medical advice.</label><br>
+                    <label><input type="checkbox" required> I waive liability for any AI-based errors.</label><br>
+                    
+                    <p><strong>AI-Specific Consent</strong></p>
+                    <label><input type="checkbox" required> I acknowledge third-party processing of my data.</label><br>
+                    <label><input type="checkbox" required> I understand AI decision-making may lack full transparency.</label><br>
+                    
+                    <p><strong>Signature & Verification</strong></p>
+                    <label for="name">Printed Name:</label>
+                    <input type="text" id="name" name="name" required><br>
+                    
+                    <label for="signature">Signature:</label>
+                    <input type="text" id="signature" name="signature" required><br>
+                    
+                    <label for="date">Date:</label>
+                    <input type="text" id="date" name="date" required placeholder="YYYY-MM-DD"><br>
+                    
+                    <button type="submit" class="w-full mt-4 bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700">Submit & Proceed to Image Analysis</button>
+                </form>
+            </div>
 
             {% if result_message %}
                 <div class="mt-6 text-center text-xl text-blue-600">
@@ -118,7 +168,7 @@
             </div>
         </div>
 
-       <div class="w-full flex justify-center mb-8">
+        <div class="w-full flex justify-center mb-8">
               <div class="bg-black p-2 rounded-lg shadow-lg w-4/5 max-w-2xl">
                   <video class="w-full h-auto" controls>
                       <source src="{{ MEDIA_URL }}example_video copy 4.mp4" type="video/mp4">
@@ -406,32 +456,21 @@
             </div>
         </div>
     </footer>
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('div[id$="Page"]').forEach(page => page.classList.add('hidden'));
+            document.getElementById(pageId + 'Page').classList.remove('hidden');
+        }
 
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+        function showWaiverForm() {
+            document.getElementById('waiverFormContainer').style.display = 'block';
+        }
 
-        // Page navigation
-        function showPage(pageId) {
-            // Hide all pages
-            document.getElementById('homePage').classList.add('hidden');
-            document.getElementById('aboutPage').classList.add('hidden');
-            document.getElementById('investorsPage').classList.add('hidden');
-           document.getElementById('learnPage').classList.add('hidden');
-            
-            // Show selected page
-            document.getElementById(pageId + 'Page').classList.remove('hidden');
-            
-            // Reset all button colors
-            document.querySelectorAll('nav button').forEach(btn => {
-                btn.classList.remove('text-blue-600');
-                btn.classList.add('text-gray-600');
-            });
-            
-            // Highlight active button
-            document.getElementById(pageId + 'Btn').classList.remove('text-gray-600');
-            document.getElementById(pageId + 'Btn').classList.add('text-blue-600');
-        }
-    </script>
-    </body>
-    </html>
+        function submitWaiverForm() {
+            document.getElementById('waiverFormContainer').style.display = 'none';
+            document.getElementById('analyzeForm').submit();
+            return false;
+        }
+    </script>
+</body>
+</html>
